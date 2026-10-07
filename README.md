@@ -2,7 +2,7 @@
 
 An interactive 3D globe for exploring recent earthquakes around the world. Built with React, Vite, and Mapbox GL JS, the app turns USGS earthquake data into a visual dashboard with magnitude markers, event details, and a chronological feed.
 
-**[View the live demo](----)**
+**[View the live demo](https://surasb11.github.io/Earthquake-tracker/)**
 
 ![Earthquake Tracker desktop preview](public/Template-img/desktop-view-earthquick-tracker.png)
 
@@ -73,6 +73,33 @@ Data refreshes every five minutes while the app is running. The app also refresh
 | `npm run build` | Generate the production build in `dist/` |
 | `npm run preview` | Preview the production build locally |
 | `npm run lint` | Run ESLint |
+
+## Deploy to GitHub Pages
+
+The deployment workflow builds the app and publishes `dist/` to
+https://surasb11.github.io/Earthquake-tracker/. Vite uses `/Earthquake-tracker/`
+as the base path so scripts, styles, and the favicon load from the project URL.
+
+1. In this repository's **Settings → Pages**, set **Source** to **GitHub Actions**.
+2. In **Settings → Secrets and variables → Actions**, add a repository secret
+   named `VITE_MAPBOX_TOKEN` containing your Mapbox **public** token (`pk.`).
+   A repository Actions variable with the same name is also supported. If both
+   exist, the secret takes precedence. Never use a Mapbox secret token (`sk.`).
+3. If the token has URL restrictions, allow this GitHub Pages site in Mapbox.
+4. Push the deployment changes to `main`. Subsequent pushes to `main` deploy
+   automatically. To deploy again after changing the token, open **Actions →
+   Deploy to GitHub Pages → Run workflow** and select `main`.
+5. Wait for both the build and deployment jobs to finish successfully before
+   opening the site.
+
+The workflow uses Node.js 24, installs dependencies with `npm ci`, runs lint,
+and builds with the token provided at build time. It fails with a configuration
+message if the token is missing or does not start with `pk.`. Changing the token
+requires a new build because Vite embeds it in the browser bundle.
+
+Keep `.env.local`, `node_modules/`, and `dist/` ignored and untracked. GitHub
+Actions receives the public token from repository settings and uploads the
+generated site as a Pages artifact; these files do not need to be committed.
 
 ## Project structure
 
