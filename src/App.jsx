@@ -1,5 +1,5 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Map, { Marker, NavigationControl, Popup } from 'react-map-gl/mapbox';
+import Map, { AttributionControl, Marker, NavigationControl, Popup } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './App.css';
 
@@ -549,6 +549,7 @@ function App() {
           mapboxAccessToken={MAPBOX_TOKEN}
           projection="globe"
           doubleClickZoom={false}
+          attributionControl={false}
           onMouseEnter={handleMapMouseEnter}
           onMouseLeave={handleMapMouseLeave}
           onMouseDown={handleMapMouseDown}
@@ -563,6 +564,7 @@ function App() {
           onPitchEnd={handleMapNavigationEnd}
           onClick={clearAllLabels}
         >
+          <AttributionControl position="bottom-right" compact />
           <NavigationControl position="bottom-right" showCompass={!isFullscreen} />
 
           {earthquakes.map((quake) => {
