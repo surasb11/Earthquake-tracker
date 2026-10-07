@@ -2,6 +2,7 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'rea
 import Map, { AttributionControl, Marker, NavigationControl, Popup } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './App.css';
+import TrackerIntro from './TrackerIntro';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 const EARTHQUAKE_FEED_URL = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.geojson';
@@ -170,6 +171,19 @@ function filterYesterdayAndToday(features, now = new Date()) {
 }
 
 function App() {
+  const trackerRef = useRef(null);
+  const restoreFocusRef = useRef(false);
+  const [isIntroVisible, setIsIntroVisible] = useState(() => !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const finishIntro = useCallback((restoreFocus) => {
+    restoreFocusRef.current = restoreFocus;
+    setIsIntroVisible(false);
+  }, []);
+  useEffect(() => {
+    if (!isIntroVisible && restoreFocusRef.current) {
+      restoreFocusRef.current = false;
+      trackerRef.current?.focus({ preventScroll: true });
+    }
+  }, [isIntroVisible]);
   const mapRef = useRef(null);
   const animationRef = useRef(null);
   const hideTimerRef = useRef(null);
@@ -181,7 +195,7 @@ function App() {
   const [dataError, setDataError] = useState('');
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
 
-  const [rotationMode, setRotationMode] = useState(() => (window.innerWidth < 768 ? 'off' : 'auto'));
+  const [rotationMode, setRotationMode] = useState(() => (window.innerWidth < 768 || window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'off' : 'auto'));
   const [isAutoPaused, setIsAutoPaused] = useState(false);
   const [isPointerOverMap, setIsPointerOverMap] = useState(false);
   const [isHoldingMap, setIsHoldingMap] = useState(false);
@@ -195,6 +209,13 @@ function App() {
   const [hoveredId, setHoveredId] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
   const [stuckId, setStuckId] = useState(null);
+
+  useEffect(() => {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handleChange = () => { if (reducedMotion.matches) setRotationMode('off'); };
+    reducedMotion.addEventListener('change', handleChange);
+    return () => reducedMotion.removeEventListener('change', handleChange);
+  }, []);
 
   const rotationIsActive =
     rotationMode === 'on'
@@ -374,7 +395,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!rotationIsActive) return undefined;
+    if (!rotationIsActive || isIntroVisible) return undefined;
 
     const rotateMap = () => {
       const map = mapRef.current?.getMap();
@@ -393,7 +414,7 @@ function App() {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [rotationIsActive]);
+  }, [rotationIsActive, isIntroVisible]);
 
   useEffect(() => {
     return () => {
@@ -532,7 +553,8 @@ function App() {
   );
 
   return (
-    <div className={`app-shell${isFullscreen ? ' is-fullscreen' : ''}`}>
+    <>
+    <div ref={trackerRef} className={`app-shell${isFullscreen ? ' is-fullscreen' : ''}`} inert={isIntroVisible} tabIndex={-1}>
       <style>{PANEL_FOLD_STYLES}</style>
       {mapIsBlocked ? (
         <div className="missing-token-panel">
@@ -780,6 +802,8 @@ function App() {
         </>
       )}
     </div>
+    {isIntroVisible && <TrackerIntro earthquakes={earthquakes} onComplete={finishIntro} />}
+    </>
   );
 }
 

@@ -1,0 +1,85 @@
+.tracker-intro {
+  --intro-closing: 0;
+  --intro-signal-offset: 220;
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  overflow: hidden;
+  background: #14141b;
+  color: #fff;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  transition: opacity 700ms ease;
+}
+
+.tracker-intro-leaving { opacity: 0; }
+
+.intro-stars {
+  position: absolute;
+  inset: 0;
+  opacity: .36;
+  background-image: radial-gradient(circle at 14% 24%, #adadbd 1px, transparent 1.4px), radial-gradient(circle at 66% 16%, #adadbd .6px, transparent 1px), radial-gradient(circle at 44% 74%, #adadbd .7px, transparent 1px), radial-gradient(circle at 86% 48%, #adadbd .6px, transparent 1px);
+  background-size: 213px 177px, 289px 231px, 311px 239px, 263px 223px;
+}
+
+.intro-globe,
+.intro-markers { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+.intro-title {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: max(12%, 94px);
+  text-align: center;
+  pointer-events: none;
+  opacity: calc(1 - var(--intro-closing) * .85);
+  transform: translateY(calc(var(--intro-closing) * -6px));
+}
+
+.intro-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #b5b8c5;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.intro-eyebrow::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #f4d03f; box-shadow: 0 0 12px #f4d03f88; }
+
+.intro-title h1 {
+  margin: 12px 0 11px;
+  color: #fff;
+  font-size: clamp(25px, 4.6vw, 48px);
+  font-weight: 900;
+  letter-spacing: .055em;
+  line-height: 1.1;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.intro-title p { margin: 0; color: #a8adbc; font-size: clamp(12px, 1.5vw, 14px); line-height: 1.5; }
+.intro-signal { width: 180px; height: 25px; display: block; margin: 17px auto 0; }
+.intro-signal path { fill: none; stroke: url(#intro-seismic-color); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 220; stroke-dashoffset: var(--intro-signal-offset); }
+.intro-status { position: absolute; top: max(28px, env(safe-area-inset-top)); left: 20px; right: 20px; text-align: center; font-size: 11px; font-weight: 600; letter-spacing: .075em; color: #9ca2b2; }
+.intro-controls { position: absolute; bottom: max(20px, env(safe-area-inset-bottom)); left: 20px; right: 20px; text-align: center; }
+.intro-controls button { min-height: 44px; padding: 10px 18px; border-radius: 12px; border: 1px solid #ffffff29; color: #dfe6f3; background: #090b16eb; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+.intro-controls button:hover { background: #ffffff14; border-color: #ffffff80; }
+.intro-controls button:focus-visible { outline: 2px solid #f4d03f; outline-offset: 4px; }
+
+@media (max-width: 420px) {
+  .intro-title { left: 16px; right: 16px; bottom: max(13%, 106px); }
+  .intro-title h1 { font-size: clamp(24px, 7.2vw, 30px); max-width: 320px; margin-left: auto; margin-right: auto; }
+  .intro-eyebrow { font-size: 10px; letter-spacing: .12em; }
+}
+
+@media (max-height: 490px) and (min-width: 500px) {
+  .intro-title { bottom: 70px; }
+  .intro-title h1 { font-size: 27px; margin: 8px 0; }
+  .intro-signal { display: none; }
+  .intro-status { top: 14px; }
+  .intro-controls { bottom: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) { .tracker-intro { transition: none; } }

@@ -8,6 +8,7 @@ An interactive 3D globe for exploring recent earthquakes around the world. Built
 
 ## Features
 
+- **Satellite globe intro** that fades into the live tracker after about 3.6 seconds, with Skip intro and reduced-motion support. The map and data load underneath the overlay.
 - **Interactive 3D globe** with zoom, navigation, and rotation controls.
 - **Recent earthquake data** showing magnitude 2.5+ events from yesterday and today.
 - **Magnitude visualization** using color-coded markers that scale with earthquake strength.
@@ -105,6 +106,7 @@ generated site as a Pages artifact; these files do not need to be committed.
 
 - `src/App.jsx` — globe, panels, controls, data fetching, and time filtering.
 - `src/App.css` — dashboard styles and mobile layout.
+- `src/TrackerIntro.jsx`, `src/TrackerIntro.css`, and `src/introGlobe.js` — introduction overlay and satellite globe animation.
 - `src/index.css` — global styles.
 - `src/main.jsx` — React entry point.
 - `public/` — favicon and preview assets.
@@ -120,5 +122,7 @@ generated site as a Pages artifact; these files do not need to be committed.
 ## Data and credits
 
 Earthquake data: [U.S. Geological Survey](https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php). Maps and globe rendering: [Mapbox](https://www.mapbox.com/).
+
+Intro satellite imagery: [NASA Visible Earth, Blue Marble](https://visibleearth.nasa.gov/images/57730/blue-marble-land-surface-ocean-color-and-sea-ice), using the image supplied in the design reference.
 
 Created by **Sura Baghirova**.
