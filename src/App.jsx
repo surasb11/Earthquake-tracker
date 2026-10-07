@@ -532,7 +532,7 @@ function App() {
   );
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell${isFullscreen ? ' is-fullscreen' : ''}`}>
       <style>{PANEL_FOLD_STYLES}</style>
       {mapIsBlocked ? (
         <div className="missing-token-panel">
@@ -761,8 +761,9 @@ function App() {
                       const [longitude, latitude] = quake.geometry.coordinates;
                       clearAllLabels();
                       changeRotation('off');
-                      setSelectedId(quake.id);
                       map?.flyTo({ center: [longitude, latitude], zoom: Math.max(map.getZoom(), 3), duration: 900 });
+                      // flyTo starts navigation, which clears the previous label.
+                      setSelectedId(quake.id);
                     }}
                   >
                     <strong style={{ color }}>{magnitude.toFixed(1)} M</strong>

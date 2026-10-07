@@ -21,7 +21,9 @@
 
 .mapboxgl-control-container {
   z-index: 900;
-  position: relative;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
 .quake-marker {
@@ -374,6 +376,11 @@ select {
 }
 
 @media (min-width: 768px) {
+  .app-shell:not(.is-fullscreen) .mapboxgl-ctrl-bottom-right {
+    right: 360px;
+    bottom: 20px;
+  }
+
   .top-panel {
     left: 20px;
     right: auto;
