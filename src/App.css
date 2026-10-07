@@ -26,6 +26,23 @@
   pointer-events: none;
 }
 
+.app-shell .mapboxgl-ctrl-logo {
+  width: 60px;
+  height: 16px;
+  background-size: contain;
+}
+
+.app-shell .mapboxgl-ctrl-attrib-button {
+  background-color: rgba(255, 255, 255, 0.25);
+  opacity: 0.6;
+}
+
+.app-shell .mapboxgl-ctrl-attrib-button:hover,
+.app-shell .mapboxgl-ctrl-attrib-button:focus-visible {
+  background-color: rgba(255, 255, 255, 0.5);
+  opacity: 1;
+}
+
 .quake-marker {
   display: block;
   padding: 0;
