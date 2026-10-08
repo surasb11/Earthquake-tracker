@@ -129,6 +129,9 @@ export function createIntroGlobe(canvas, markersCanvas, imageUrl, onFailure) {
       const radius = baseRadius * (0.88 + 0.12 * opening + 0.04 * closing);
       const x = width / 2;
       const y = height * (landscape ? 0.33 : compact ? 0.32 : 0.385);
+      // Enforce the sphere boundary in the browser compositor as well as the
+      // shader, so no canvas pixels can form a ring outside the globe.
+      canvas.style.clipPath = `circle(${radius}px at ${x}px ${y}px)`;
       // Time-based spherical rotation eases to the real tracker's starting view.
       const longitude = radians(-125 + 44.9 * smoothstep(progress));
       const latitude = radians(20 + 5.8 * smoothstep(progress));
