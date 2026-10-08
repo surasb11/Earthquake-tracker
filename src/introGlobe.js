@@ -16,13 +16,9 @@ const FRAGMENT_SHADER = `
   void main() {
     vec2 point = (gl_FragCoord.xy - center) / radius;
     float distance = length(point);
-    if (distance > 1.14) { gl_FragColor = vec4(0.0); return; }
-    float edge = 1.0 - smoothstep(1.0 - 1.5 / radius, 1.0 + 1.5 / radius, distance);
-    float halo = exp(-pow((distance - 1.015) / 0.045, 2.0)) * 0.28;
-    if (distance > 1.0) {
-      gl_FragColor = vec4(0.82, 0.87, 1.0, max(halo, edge * 0.5));
-      return;
-    }
+    // Keep pixels outside the actual sphere transparent, without a halo or rim.
+    if (distance >= 1.0) { gl_FragColor = vec4(0.0); return; }
+    float edge = 1.0 - smoothstep(1.0 - 1.5 / radius, 1.0, distance);
     vec3 normal = vec3(point, sqrt(max(0.0, 1.0 - dot(point, point))));
     float sinLatitude = sin(latitude);
     float cosLatitude = cos(latitude);
@@ -31,7 +27,6 @@ const FRAGMENT_SHADER = `
     float v = 0.5 - asin(clamp(normal.y * cosLatitude + normal.z * sinLatitude, -1.0, 1.0)) / PI;
     vec3 color = texture2D(earth, vec2(fract(u), v)).rgb;
     color *= 0.36 + 0.79 * max(0.0, dot(normal, vec3(-0.38, 0.56, 0.74)));
-    color = mix(color, vec3(0.86, 0.88, 1.0), smoothstep(0.89, 1.0, distance) * 0.22);
     gl_FragColor = vec4(color, edge);
   }
 `;
