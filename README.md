@@ -40,7 +40,7 @@ Data refreshes every five minutes while the app is running. The app also refresh
 
 ### Requirements
 
-- Node.js 22.12 or later and npm.
+- Node.js 24 (recommended) or Node.js 22.13+ in the 22.x release line, and npm.
 - A [Mapbox account and public access token](https://docs.mapbox.com/help/getting-started/access-tokens/).
 
 ### Setup
@@ -49,7 +49,7 @@ Data refreshes every five minutes while the app is running. The app also refresh
 2. Install the dependencies:
 
    ```bash
-   npm install
+   npm ci
    ```
 
 3. Create a file named `.env.local` in the project root and add your Mapbox public token:
