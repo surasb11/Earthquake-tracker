@@ -4,7 +4,7 @@ An interactive 3D globe for exploring recent earthquakes around the world. Built
 
 **[View the live demo](https://surasb11.github.io/Earthquake-tracker/)**
 
-![Earthquake Tracker desktop preview](public/Template-img/desktop-view-earthquick-tracker.png)
+<img src="public/Template-img/desktop-view-earthquick-tracker.png" alt="Earthquake Tracker desktop preview" width="800">
 
 ## Features
 
@@ -12,12 +12,12 @@ An interactive 3D globe for exploring recent earthquakes around the world. Built
 - **Interactive 3D globe** with zoom, navigation, and rotation controls.
 - **Recent earthquake data** showing magnitude 2.5+ events from yesterday and today.
 - **Magnitude visualization** using color-coded markers that scale with earthquake strength.
-- **Event details** showing magnitude, location, and local date and time.
+- **Event details** showing magnitude, location, local date and time, and a Read More link to the USGS event page.
 - **Global Feed** listing the 20 most recent events in the current time window.
 - **System panel** showing the event count, strongest earthquake, and data status.
 - **Four map layers:** Telemetry, Satellite, Ocean / Terrain, and Street.
 - **Foldable panels** and a fullscreen view that hides the dashboard panels.
-- **Responsive layout** with a mobile info bar above SYSTEM containing the magnitude legend and FEED button. SYSTEM starts closed on mobile.
+- **Responsive layout** with a magnitude legend above collapsible SYSTEM and FEED sections on mobile. Both sections start closed; opening one closes the other.
 
 ## How the data works
 

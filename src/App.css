@@ -59,8 +59,8 @@
 .quake-popup-card {
   display: grid;
   gap: 2px;
-  min-width: 190px;
-  max-width: 260px;
+  width: min(340px, calc(100vw - 32px));
+  min-width: 0;
   padding: 10px 12px;
   background: rgba(5, 9, 20, 0.95);
   border: 1px solid;
@@ -78,9 +78,46 @@
   line-height: 1.25;
 }
 
-.quake-popup-card small {
+.quake-popup-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.quake-popup-header strong {
+  flex: 0 0 auto;
+}
+
+.quake-popup-time {
+  min-width: 0;
   color: #a0a7b4;
   font-size: 0.72rem;
+  line-height: 1.35;
+  text-align: right;
+}
+
+.quake-news-link {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  min-height: 32px;
+  margin-top: 6px;
+  padding: 4px 0;
+  color: #dfe6f3;
+  font-size: 0.76rem;
+  text-underline-offset: 3px;
+}
+
+.quake-news-link:hover {
+  color: #fff;
+}
+
+.quake-news-link:focus-visible {
+  outline: 2px solid #75f0a7;
+  outline-offset: 3px;
+  border-radius: 3px;
 }
 
 .control-panel,
@@ -386,24 +423,59 @@ select {
   }
 }
 
+.telemetry-panel {
+  display: contents;
+}
+
 @media (min-width: 768px) {
+  .panel-fold-button svg {
+    transform: rotate(180deg);
+  }
+
   .app-shell:not(.is-fullscreen) .mapboxgl-ctrl-bottom-right {
-    right: 360px;
+    right: 20px;
     bottom: 20px;
   }
 
   .top-panel {
-    left: 20px;
-    right: auto;
+    left: auto;
+    right: 20px;
   }
 
   .top-panel .control-field select {
     min-width: clamp(90px, 11vw, 150px);
   }
 
-  .status-panel {
-    left: auto;
-    right: 20px;
+  .telemetry-panel {
+    position: absolute;
+    z-index: 1000;
+    left: 20px;
+    bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    max-height: calc(100% - 112px);
+    overflow-y: auto;
+    background: rgba(5, 9, 20, 0.82);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.34);
+    backdrop-filter: blur(14px);
+  }
+
+  .telemetry-panel .hud-panel {
+    position: static;
+    width: auto;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  .telemetry-panel .status-panel {
+    flex: 0 0 auto;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
   }
 
   .status-panel .strongest-card {
@@ -425,23 +497,33 @@ select {
   }
 
   .legend-panel {
-    width: 140px;
-    padding: 14px;
+    top: 20px;
+    bottom: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: auto;
+    max-width: calc(100% - 400px);
+    padding: 12px 14px;
   }
 
   .legend-panel h2 {
-    margin-bottom: 10px;
-    padding-bottom: 8px;
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 0;
+    border: 0;
     font-size: 0.78rem;
   }
 
   .legend-panel .legend-strip {
-    gap: 8px;
+    display: flex;
+    gap: 12px;
   }
 
   .legend-panel .legend-row {
     gap: 8px;
     font-size: 0.78rem;
+    white-space: nowrap;
   }
 
   .legend-panel .legend-dot {
@@ -449,16 +531,41 @@ select {
     height: 10px;
   }
 
-  .feed-panel {
-    top: auto;
+  .telemetry-panel .feed-panel {
+    flex: 0 0 auto;
     height: min(44vh, 360px);
-    max-height: calc(100vh - 320px);
+    max-height: none;
+  }
+
+  .telemetry-panel .feed-panel.panel-folded {
+    height: auto;
   }
 
   .feed-panel .feed-list {
     flex: 1;
     scrollbar-width: thin;
     scrollbar-color: #8f99aa rgba(255, 255, 255, 0.06);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 900px) {
+  .legend-panel {
+    gap: 8px;
+    max-width: calc(100% - 360px);
+    padding-inline: 12px;
+  }
+
+  .legend-panel h2,
+  .legend-panel .legend-row {
+    font-size: 0.72rem;
+  }
+
+  .legend-panel .legend-strip {
+    gap: 8px;
+  }
+
+  .legend-panel .legend-row {
+    gap: 6px;
   }
 }
 
@@ -491,30 +598,60 @@ select {
     backdrop-filter: blur(18px) saturate(1.15);
   }
 
-  .mobile-command-panel {
+  .telemetry-panel {
+    position: absolute;
+    z-index: 1000;
     top: max(12px, env(safe-area-inset-top));
     left: 12px;
     right: 12px;
-    width: auto;
-    padding: 10px;
-    border-radius: 20px;
-    transition: max-height 220ms ease, padding 220ms ease;
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
     max-height: calc(100% - max(12px, env(safe-area-inset-top)) - max(12px, env(safe-area-inset-bottom)));
     overflow-y: auto;
     overscroll-behavior: contain;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    background: rgba(7, 10, 24, 0.72);
+    box-shadow: 0 16px 42px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(18px) saturate(1.15);
   }
 
-  .mobile-command-panel-collapsed {
-    padding: 8px;
+  .telemetry-panel .hud-panel {
+    position: static;
+    flex: 0 0 auto;
+    width: auto;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  .mobile-command-panel #system-status-content {
+    max-height: min(42dvh, 360px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: 2px;
   }
 
   .mobile-info-bar {
+    --mobile-magnitude-font-size: clamp(0.58rem, 3vw, 0.75rem);
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: clamp(5px, 1.5vw, 8px);
     margin-bottom: 8px;
-    padding: 2px 3px 9px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 4px 10px 8px;
+  }
+
+  .mobile-magnitude-title {
+    flex: 0 0 auto;
+    color: #fff;
+    font-size: var(--mobile-magnitude-font-size);
+    font-weight: 850;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
   }
 
   .mobile-info-legend {
@@ -523,39 +660,20 @@ select {
   }
 
   .mobile-info-legend .legend-strip {
-    flex-wrap: wrap;
-    gap: 7px 10px;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    gap: 4px;
     overflow: visible;
   }
 
   .mobile-info-legend .legend-row {
-    gap: 5px;
-    font-size: 0.68rem;
+    gap: clamp(3px, 0.9vw, 4px);
+    font-size: var(--mobile-magnitude-font-size);
   }
 
-  .mobile-feed-button {
-    flex: 0 0 auto;
-    min-height: 36px;
-    padding: 0 10px;
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.06);
-    color: #dfe6f3;
-    font-size: 0.68rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    cursor: pointer;
-  }
-
-  .mobile-feed-button:hover {
-    border-color: rgba(255, 255, 255, 0.72);
-    color: #fff;
-  }
-
-  .mobile-feed-button:focus-visible {
-    outline: 2px solid #75f0a7;
-    outline-offset: 3px;
+  .mobile-info-legend .legend-dot {
+    width: clamp(7px, 2.4vw, 10px);
+    height: clamp(7px, 2.4vw, 10px);
   }
 
   .mobile-panel-header {
@@ -564,11 +682,22 @@ select {
     grid-template-columns: auto 8px 1fr auto;
     align-items: center;
     gap: 8px;
+    height: 38px;
     min-height: 38px;
     padding: 0 11px;
     background: rgba(255, 255, 255, 0.045);
     border-radius: 15px;
     text-align: left;
+  }
+
+  .mobile-feed-header {
+    grid-template-columns: 1fr auto;
+    margin-top: 6px;
+  }
+
+  .mobile-panel-header:focus-visible {
+    outline: 2px solid #75f0a7;
+    outline-offset: -3px;
   }
 
   .panel-title {
@@ -596,9 +725,19 @@ select {
   }
 
   .panel-chevron {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.04);
     color: #dfe6f3;
-    font-size: 1rem;
-    line-height: 1;
+  }
+
+  .panel-chevron svg {
+    width: 16px;
+    height: 16px;
   }
 
   .desktop-panel-title {
@@ -717,36 +856,17 @@ select {
     height: 9px;
   }
 
-  .feed-panel {
-    top: max(10px, env(safe-area-inset-top));
-    right: 10px;
-    bottom: 10px;
-    width: min(88vw, 360px);
-    padding: 12px;
-    border-radius: 22px;
-    transform: translateX(0);
+  .telemetry-panel .feed-panel {
+    transition: none;
   }
 
-  .feed-panel-closed {
-    transform: translateX(calc(100% + 18px));
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .feed-header h2 {
-    margin-bottom: 10px;
-    font-size: 0.72rem;
-    letter-spacing: 0.1em;
-  }
-
-  .feed-close-button {
-    width: 34px;
-    height: 34px;
-    display: inline-grid;
-    place-items: center;
-    padding: 0;
-    border-radius: 50%;
-    font-size: 1.2rem;
+  .telemetry-panel .feed-list {
+    max-height: min(42dvh, 360px);
+    margin-top: 9px;
+    padding-right: 4px;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: #8f99aa rgba(255, 255, 255, 0.06);
   }
 
   .feed-entry {
@@ -785,8 +905,12 @@ select {
   }
 
   .quake-popup-card {
-    max-width: 220px;
+    width: min(300px, calc(100vw - 32px));
     padding: 9px 10px;
+  }
+
+  .quake-news-link {
+    min-height: 44px;
   }
 }
 

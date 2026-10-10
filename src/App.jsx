@@ -97,6 +97,14 @@ const PANEL_FOLD_STYLES = `
   }
 `;
 
+function PanelChevron({ expanded }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d={expanded ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function PanelFoldButton({ expanded, onClick, label, controls }) {
   return (
     <button
@@ -108,9 +116,7 @@ function PanelFoldButton({ expanded, onClick, label, controls }) {
       aria-label={`${expanded ? 'Collapse' : 'Expand'} ${label}`}
       title={`${expanded ? 'Collapse' : 'Expand'} ${label}`}
     >
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d={expanded ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
+      <PanelChevron expanded={expanded} />
     </button>
   );
 }
@@ -202,9 +208,11 @@ function App() {
 
   const [mapStyle, setMapStyle] = useState(MAP_STYLES[1].value);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isFeedOpen, setIsFeedOpen] = useState(() => window.innerWidth >= 768);
-  const [isStatusOpen, setIsStatusOpen] = useState(() => window.innerWidth >= 768);
+  const [mobileOpenPanel, setMobileOpenPanel] = useState(null);
+  const [isStatusOpen, setIsStatusOpen] = useState(false);
   const [isAnomalyFeedExpanded, setIsAnomalyFeedExpanded] = useState(true);
+  const statusIsExpanded = isMobile ? mobileOpenPanel === 'system' : isStatusOpen;
+  const feedIsExpanded = isMobile ? mobileOpenPanel === 'feed' : isAnomalyFeedExpanded;
 
   const [hoveredId, setHoveredId] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
@@ -269,6 +277,14 @@ function App() {
     }
   }, []);
 
+  const scheduleLabelHide = useCallback((id) => {
+    clearHideTimer();
+    hideTimerRef.current = setTimeout(() => {
+      setHoveredId((currentId) => (currentId === id ? null : currentId));
+      setSelectedId((currentId) => (currentId === id ? null : currentId));
+    }, SINGLE_CLICK_HIDE_DELAY);
+  }, [clearHideTimer]);
+
   const clearAllLabels = useCallback(() => {
     clearHideTimer();
     setHoveredId(null);
@@ -317,9 +333,7 @@ function App() {
 
       if (nextIsMobile) {
         setRotationMode((currentMode) => (currentMode === 'auto' ? 'off' : currentMode));
-        setIsFeedOpen(false);
-      } else {
-        setIsFeedOpen(true);
+
       }
     };
 
@@ -616,14 +630,7 @@ function App() {
                       clearHideTimer();
                       setHoveredId(id);
                     }}
-                    onMouseLeave={() => {
-                      setHoveredId(null);
-                      if (selectedId === id && stuckId !== id) {
-                        hideTimerRef.current = setTimeout(() => {
-                          setSelectedId((currentId) => (currentId === id ? null : currentId));
-                        }, SINGLE_CLICK_HIDE_DELAY);
-                      }
-                    }}
+                    onMouseLeave={() => scheduleLabelHide(id)}
                     onClick={(event) => {
                       event.stopPropagation();
                       if (rotationIsActive) return;
@@ -649,11 +656,31 @@ function App() {
                     anchor="bottom"
                     offset={size / 2 + 6}
                     className="quake-popup"
+                    maxWidth="none"
                   >
-                    <div className="quake-popup-card" style={{ borderColor: color }}>
-                      <strong style={{ color }}>{magnitude.toFixed(1)} M</strong>
+                    <div
+                      className="quake-popup-card"
+                      style={{ borderColor: color }}
+                      onMouseEnter={clearHideTimer}
+                      onMouseLeave={() => scheduleLabelHide(id)}
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <div className="quake-popup-header">
+                        <strong style={{ color }}>{magnitude.toFixed(1)} M</strong>
+                        <time className="quake-popup-time" dateTime={new Date(quake.properties.time).toISOString()}>
+                          {new Date(quake.properties.time).toLocaleString()}
+                        </time>
+                      </div>
                       <span>{quake.properties.place}</span>
-                      <small>{new Date(quake.properties.time).toLocaleString()}</small>
+                      <a
+                        className="quake-news-link"
+                        href={quake.properties.url || `https://earthquake.usgs.gov/earthquakes/eventpage/${encodeURIComponent(id)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Read more about the ${magnitude.toFixed(1)} magnitude earthquake, ${quake.properties.place} (opens in a new tab)`}
+                      >
+                        Read More
+                      </a>
                     </div>
                   </Popup>
                 )}
@@ -681,72 +708,6 @@ function App() {
             </section>
           )}
 
-          <aside className={`hud-panel status-panel ${isMobile ? 'mobile-command-panel' : ''} ${!isStatusOpen ? 'panel-folded' : ''} ${isMobile && !isStatusOpen ? 'mobile-command-panel-collapsed' : ''}`}>
-            {isMobile && (
-              <div className="mobile-info-bar">
-                <div className="mobile-info-legend" role="group" aria-label="Magnitude scale">
-                  <MagnitudeLegend />
-                </div>
-                {!isFeedOpen && (
-                  <button
-                    className="mobile-feed-button"
-                    type="button"
-                    onClick={() => setIsFeedOpen(true)}
-                    aria-label="Show anomaly feed"
-                    aria-controls="global-feed-panel"
-                    aria-expanded={isFeedOpen}
-                  >
-                    Feed
-                  </button>
-                )}
-              </div>
-            )}
-            <button
-              className="mobile-panel-header"
-              type="button"
-              onClick={() => setIsStatusOpen((currentValue) => !currentValue)}
-              aria-expanded={isStatusOpen}
-              aria-controls="system-status-content"
-            >
-              <span className="panel-title">System</span>
-              <span className="panel-live-dot" />
-              <span className="panel-mini-stat">{earthquakes.length || '—'} signals</span>
-              <span className="panel-chevron">{isStatusOpen ? '⌃' : '⌄'}</span>
-            </button>
-
-            <div className="desktop-panel-title panel-fold-header">
-              <h2>System Status</h2>
-              <PanelFoldButton
-                expanded={isStatusOpen}
-                onClick={() => setIsStatusOpen((currentValue) => !currentValue)}
-                label="System Status"
-                controls="system-status-content"
-              />
-            </div>
-
-            {isStatusOpen && (
-              <div id="system-status-content">
-                {isMobile && controlsMarkup}
-
-                <div className="metric-grid">
-                  <div className="metric-card"><span>Signals</span><strong>{earthquakes.length}</strong></div>
-                  <div className="metric-card"><span>Source</span><strong>USGS</strong></div>
-                  <div className="metric-card"><span>Feed</span><strong>M2.5+ / Yesterday + Today</strong></div>
-                  <div className="metric-card"><span>Status</span><strong>{statusLabel}</strong></div>
-                </div>
-
-                {strongestQuake && (
-                  <div className="strongest-card">
-                    <span>Strongest</span>
-                    <strong>{Number(strongestQuake.properties.mag ?? 0).toFixed(1)} M</strong>
-                    <small>{strongestQuake.properties.place}</small>
-                  </div>
-                )}
-                {dataError && <p className="error-text">{dataError}</p>}
-              </div>
-            )}
-          </aside>
-
           {!isMobile && (
             <aside className="hud-panel legend-panel" aria-label="Magnitude scale">
               <h2>Magnitude</h2>
@@ -754,50 +715,115 @@ function App() {
             </aside>
           )}
 
-          <aside id="global-feed-panel" className={`hud-panel feed-panel ${!isAnomalyFeedExpanded ? 'panel-folded' : ''} ${isMobile && !isFeedOpen ? 'feed-panel-closed' : ''}`}>
-            <div className="feed-header panel-fold-header">
-              <h2>Global Feed</h2>
-              <PanelFoldButton
-                expanded={isAnomalyFeedExpanded}
-                onClick={() => setIsAnomalyFeedExpanded((currentValue) => !currentValue)}
-                label="Global Feed"
-                controls="anomaly-feed-content"
-              />
-              {isMobile && (
-                <button className="feed-close-button" type="button" onClick={() => setIsFeedOpen(false)} aria-label="Close anomaly feed">
-                  ×
-                </button>
-              )}
-            </div>
-            {isAnomalyFeedExpanded && <div className="feed-list" id="anomaly-feed-content">
-              {recentQuakes.map((quake) => {
-                const magnitude = Number(quake.properties.mag ?? 0);
-                const color = getUSGSMagColor(magnitude);
+          <div className="telemetry-panel">
+            {isMobile && (
+              <div className="mobile-info-bar">
+                <span className="mobile-magnitude-title">Magnitude</span>
+                <div className="mobile-info-legend" role="group" aria-label="Magnitude scale">
+                  <MagnitudeLegend />
+                </div>
+              </div>
+            )}
+            <aside className={`hud-panel status-panel ${isMobile ? 'mobile-command-panel' : ''} ${!statusIsExpanded ? 'panel-folded' : ''}`}>
+              <button
+                className="mobile-panel-header"
+                type="button"
+                onClick={() => setMobileOpenPanel((current) => current === 'system' ? null : 'system')}
+                aria-expanded={statusIsExpanded}
+                aria-controls="system-status-content"
+              >
+                <span className="panel-title">System</span>
+                <span className="panel-live-dot" />
+                <span className="panel-mini-stat">{earthquakes.length || '—'} signals</span>
+                <span className="panel-chevron"><PanelChevron expanded={statusIsExpanded} /></span>
+              </button>
 
-                return (
-                  <button
-                    className="feed-entry"
-                    key={quake.id}
-                    type="button"
-                    style={{ borderLeftColor: color }}
-                    onClick={() => {
-                      const map = mapRef.current?.getMap();
-                      const [longitude, latitude] = quake.geometry.coordinates;
-                      clearAllLabels();
-                      changeRotation('off');
-                      map?.flyTo({ center: [longitude, latitude], zoom: Math.max(map.getZoom(), 3), duration: 900 });
-                      // flyTo starts navigation, which clears the previous label.
-                      setSelectedId(quake.id);
-                    }}
-                  >
-                    <strong style={{ color }}>{magnitude.toFixed(1)} M</strong>
-                    <span>{quake.properties.place}</span>
-                    <small>{new Date(quake.properties.time).toLocaleString()}</small>
-                  </button>
-                );
-              })}
-            </div>}
-          </aside>
+              <div className="desktop-panel-title panel-fold-header">
+                <h2>System Status</h2>
+                <PanelFoldButton
+                  expanded={isStatusOpen}
+                  onClick={() => setIsStatusOpen((currentValue) => !currentValue)}
+                  label="System Status"
+                  controls="system-status-content"
+                />
+              </div>
+
+              {statusIsExpanded && (
+                <div id="system-status-content">
+                  {isMobile && controlsMarkup}
+
+                  <div className="metric-grid">
+                    <div className="metric-card"><span>Signals</span><strong>{earthquakes.length}</strong></div>
+                    <div className="metric-card"><span>Source</span><strong>USGS</strong></div>
+                    <div className="metric-card"><span>Feed</span><strong>M2.5+ / Yesterday + Today</strong></div>
+                    <div className="metric-card"><span>Status</span><strong>{statusLabel}</strong></div>
+                  </div>
+
+                  {strongestQuake && (
+                    <div className="strongest-card">
+                      <span>Strongest</span>
+                      <strong>{Number(strongestQuake.properties.mag ?? 0).toFixed(1)} M</strong>
+                      <small>{strongestQuake.properties.place}</small>
+                    </div>
+                  )}
+                  {dataError && <p className="error-text">{dataError}</p>}
+                </div>
+              )}
+            </aside>
+
+            <aside id="global-feed-panel" className={`hud-panel feed-panel ${!feedIsExpanded ? 'panel-folded' : ''}`}>
+              {isMobile ? (
+                <button
+                  className="mobile-panel-header mobile-feed-header"
+                  type="button"
+                  onClick={() => setMobileOpenPanel((current) => current === 'feed' ? null : 'feed')}
+                  aria-expanded={feedIsExpanded}
+                  aria-controls="anomaly-feed-content"
+                >
+                  <span className="panel-title">Feed</span>
+                  <span className="panel-chevron"><PanelChevron expanded={feedIsExpanded} /></span>
+                </button>
+              ) : (
+                <div className="feed-header panel-fold-header">
+                  <h2>Global Feed</h2>
+                  <PanelFoldButton
+                    expanded={isAnomalyFeedExpanded}
+                    onClick={() => setIsAnomalyFeedExpanded((currentValue) => !currentValue)}
+                    label="Global Feed"
+                    controls="anomaly-feed-content"
+                  />
+                </div>
+              )}
+              {feedIsExpanded && <div className="feed-list" id="anomaly-feed-content">
+                {recentQuakes.map((quake) => {
+                  const magnitude = Number(quake.properties.mag ?? 0);
+                  const color = getUSGSMagColor(magnitude);
+
+                  return (
+                    <button
+                      className="feed-entry"
+                      key={quake.id}
+                      type="button"
+                      style={{ borderLeftColor: color }}
+                      onClick={() => {
+                        const map = mapRef.current?.getMap();
+                        const [longitude, latitude] = quake.geometry.coordinates;
+                        clearAllLabels();
+                        changeRotation('off');
+                        map?.flyTo({ center: [longitude, latitude], zoom: Math.max(map.getZoom(), 3), duration: 900 });
+                        // flyTo starts navigation, which clears the previous label.
+                        setSelectedId(quake.id);
+                      }}
+                    >
+                      <strong style={{ color }}>{magnitude.toFixed(1)} M</strong>
+                      <span>{quake.properties.place}</span>
+                      <small>{new Date(quake.properties.time).toLocaleString()}</small>
+                    </button>
+                  );
+                })}
+              </div>}
+            </aside>
+          </div>
 
         </>
       )}
